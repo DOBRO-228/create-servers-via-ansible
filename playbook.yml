@@ -1,0 +1,36 @@
+- name: Create Digital Ocean droplets
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: Register DO ssh key
+      register: do_ssh_key
+      community.digitalocean.digital_ocean_sshkey_info:
+        oauth_token: "{{ do_oauth_token }}"
+
+    - name: Create a new droplets
+      community.digitalocean.digital_ocean_droplet:
+        state: active
+        wait: yes
+        unique_name: yes
+        wait_timeout: 120
+        name: "{{ item }}"
+        oauth_token: "{{ do_oauth_token }}"
+        size: "s-1vcpu-1gb"
+        region: "ams3"
+        image: "docker-20-04"
+        ssh_keys:
+          - "{{ do_ssh_key.data.0.id }}"
+      loop:
+      - web1
+      - web2
+      register: droplets_info
+    
+    - name: print home_dirs variable
+      ansible.builtin.debug:
+        var: droplets_info
+
+    - name: Create inventory file
+      template:
+        src: "{{ playbook_dir }}/templates/inventory.ini.j2"
+        dest: "{{ playbook_dir }}/inventory.ini"

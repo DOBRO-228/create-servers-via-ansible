@@ -1,0 +1,5 @@
+[digital-ocean]
+{# выполнение цикла #}
+{% for one_droplet in droplets_info.results %}
+{{ one_droplet.item }} ansible_host={{ one_droplet.data.droplet.networks.v4.0.ip_address }} ansible_user=root
+{% endfor %}
